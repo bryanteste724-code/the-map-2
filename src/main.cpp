@@ -3,13 +3,13 @@
 
 using namespace geode::prelude;
 
-class MapImageLayer : public CCLayer {
+class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
     CCPoint m_last;
 
 public:
     bool init() override {
-        if (!CCLayer::init())
+        if (!CCLayerColor::initWithColor({0, 0, 0, 255}))
             return false;
 
         auto win = CCDirector::sharedDirector()->getWinSize();
@@ -22,8 +22,11 @@ public:
         auto size = m_image->getContentSize();
 
         m_image->setPosition(win / 2);
-        m_image->setScaleX(win.width / size.width);
-        m_image->setScaleY(win.height / size.height);
+
+        constexpr float zoom = 1.50f;
+
+        m_image->setScaleX((win.width / size.width) * zoom);
+        m_image->setScaleY((win.height / size.height) * zoom);
 
         addChild(m_image);
 
@@ -54,7 +57,7 @@ public:
         CCDirector::sharedDirector()->getTouchDispatcher()
             ->removeDelegate(this);
 
-        CCLayer::onExit();
+        CCLayerColor::onExit();
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent*) override {
@@ -69,7 +72,27 @@ public:
 
     void ccTouchMoved(CCTouch* touch, CCEvent*) override {
         auto pos = convertToNodeSpace(touch->getLocation());
-        m_image->setPosition(m_image->getPosition() + pos - m_last);
+
+        auto delta = pos - m_last;
+        auto newPos = m_image->getPosition() + delta;
+
+        auto size = m_image->getContentSize();
+        auto anchor = m_image->getAnchorPoint();
+        auto win = CCDirector::sharedDirector()->getWinSize();
+
+        float width = size.width * m_image->getScaleX();
+        float height = size.height * m_image->getScaleY();
+
+        float minX = win.width - width * (1.0f - anchor.x);
+        float maxX = width * anchor.x;
+
+        float minY = win.height - height * (1.0f - anchor.y);
+        float maxY = height * anchor.y;
+
+        newPos.x = fmaxf(minX, fminf(maxX, newPos.x));
+        newPos.y = fmaxf(minY, fminf(maxY, newPos.y));
+
+        m_image->setPosition(newPos);
         m_last = pos;
     }
 
