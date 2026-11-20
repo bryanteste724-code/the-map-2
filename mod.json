@@ -1,0 +1,16 @@
+{
+    "geode": "5.11.2",
+    "gd": {
+        "android": "2.2081"
+    },
+    "id": "bryan.the-map",
+    "name": "THE MAP",
+    "version": "5.11.2",
+    "developer": "bryan",
+    "description": "The map.",
+    "resources": {
+        "sprites": [
+            "resources/map.png"
+        ]
+    }
+}
