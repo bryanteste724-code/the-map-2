@@ -11,6 +11,9 @@
     "resources": {
         "sprites": [
             "resources/map.png"
+        ],
+        "files": [
+            "resources/map_01.mp3"
         ]
     }
 }
