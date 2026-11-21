@@ -19,6 +19,15 @@ public:
         if (!m_image)
             return false;
 
+        // Toca a música ao abrir o mapa
+        auto musicPath = Mod::get()->getResourcesDir() / "map_01.mp3";
+        FMODAudioEngine::sharedEngine()->playMusic(
+            musicPath.string(),
+            true,
+            1.0f,
+            0
+        );
+
         auto size = m_image->getContentSize();
         m_image->setPosition(win / 2);
 
