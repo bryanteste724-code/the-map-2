@@ -1,11 +1,11 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/CreatorLayer.hpp>
+#include <cmath>
 
 using namespace geode::prelude;
 
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
-    CCPoint m_last;
 
 public:
     bool init() override {
@@ -15,20 +15,38 @@ public:
         auto win = CCDirector::sharedDirector()->getWinSize();
 
         m_image = CCSprite::create("map.png"_spr);
-
         if (!m_image)
             return false;
 
         auto size = m_image->getContentSize();
-
         m_image->setPosition(win / 2);
 
         constexpr float zoom = 1.50f;
-
         m_image->setScaleX((win.width / size.width) * zoom);
         m_image->setScaleY((win.height / size.height) * zoom);
 
         addChild(m_image);
+
+        // Botão X
+        auto closeSprite = CCSprite::create("GJ_closeBtn_001.png"_spr);
+        if (!closeSprite)
+            return false;
+
+        auto closeButton = CCMenuItemSpriteExtra::create(
+            closeSprite,
+            this,
+            menu_selector(MapImageLayer::onClose)
+        );
+
+        auto menu = CCMenu::create(closeButton, nullptr);
+        menu->setPosition(CCPointZero);
+
+        closeButton->setPosition({
+            win.width - 25,
+            win.height - 25
+        });
+
+        addChild(menu, 100);
 
         setTouchEnabled(true);
         setKeypadEnabled(true);
@@ -46,6 +64,10 @@ public:
 
         CC_SAFE_DELETE(ret);
         return nullptr;
+    }
+
+    void onClose(CCObject*) {
+        removeFromParentAndCleanup(true);
     }
 
     void registerWithTouchDispatcher() override {
@@ -99,6 +121,9 @@ public:
     void keyBackClicked() override {
         removeFromParentAndCleanup(true);
     }
+
+private:
+    CCPoint m_last;
 };
 
 class $modify(MyCreatorLayer, CreatorLayer) {
