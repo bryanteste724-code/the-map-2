@@ -31,10 +31,11 @@ public:
 
         addChild(m_image);
 
-        // GOLD: fica fixo no centro superior
+        // GOLD: tamanho reduzido e posição fixa
         m_gold = CCSprite::create("gold - the map.png"_spr);
 
         if (m_gold) {
+            m_gold->setScale(0.5f);
             m_gold->setPosition({
                 win.width / 2,
                 win.height - 35
