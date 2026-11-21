@@ -95,7 +95,6 @@ public:
         if (m_dragging)
             m_last = pos;
 
-        // Captura o toque para impedir que chegue à CreatorLayer
         return true;
     }
 
@@ -146,6 +145,34 @@ private:
 };
 
 class $modify(MyCreatorLayer, CreatorLayer) {
+    bool init() {
+        if (!CreatorLayer::init())
+            return false;
+
+        // Remove grayscale dos botões da CreatorLayer
+        if (auto menu = this->getChildByID("creator-buttons-menu")) {
+            for (auto* node : CCArrayExt<CCNode*>(menu->getChildren())) {
+                if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(node)) {
+                    btn->setEnabled(true);
+
+                    if (auto normalImage = btn->getNormalImage()) {
+                        normalImage->setColor(ccc3(255, 255, 255));
+                        normalImage->setOpacity(255);
+
+                        for (auto* child : CCArrayExt<CCNode*>(normalImage->getChildren())) {
+                            if (auto rgbaNode = typeinfo_cast<CCRGBAProtocol*>(child)) {
+                                rgbaNode->setColor(ccc3(255, 255, 255));
+                                rgbaNode->setOpacity(255);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     void onAdventureMap(CCObject* sender) {
         auto layer = MapImageLayer::create();
 
