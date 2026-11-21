@@ -24,7 +24,7 @@ public:
         auto size = m_image->getContentSize();
         m_image->setPosition(win / 2);
 
-        constexpr float zoom = 1.83f;
+        constexpr float zoom = 2.0f;
         m_image->setScaleX((win.width / size.width) * zoom);
         m_image->setScaleY((win.height / size.height) * zoom);
         addChild(m_image);
