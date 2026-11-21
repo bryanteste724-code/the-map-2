@@ -149,45 +149,18 @@ class $modify(MyCreatorLayer, CreatorLayer) {
         if (!CreatorLayer::init())
             return false;
 
-        // Diagnostico dos nos da CreatorLayer
-        std::function<void(CCNode*, int)> inspect = [&](CCNode* node, int depth) {
-            if (!node) return;
-
-            auto indent = std::string(depth * 2, ' ');
-            log::info("{}Node: {} | ID: {} | Tag: {}",
-                indent,
-                typeid(*node).name(),
-                node->getID(),
-                node->getTag()
-            );
-
-            if (auto sprite = typeinfo_cast<CCSprite*>(node)) {
-                auto color = sprite->getColor();
-                log::info("{}Sprite color: {},{},{} opacity: {}",
-                    indent, color.r, color.g, color.b, sprite->getOpacity());
-            }
-
-            if (auto menu = typeinfo_cast<CCMenu*>(node)) {
-                for (auto* child : CCArrayExt<CCNode*>(menu->getChildren())) {
-                    if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(child)) {
-                        log::info("{}BUTTON enabled: {}", indent, btn->isEnabled());
-                    }
-                }
-            }
-
-            for (auto* child : CCArrayExt<CCNode*>(node->getChildren())) {
-                inspect(child, depth + 1);
-            }
-        };
-
-        log::info("=== THE MAP: CREATORLAYER DIAGNOSTIC ===");
-        inspect(this, 0);
-        log::info("=== END DIAGNOSTIC ===");
-
         return true;
     }
 
     void onAdventureMap(CCObject* sender) {
+        if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(sender)) {
+            btn->setEnabled(true);
+            btn->setColor(ccc3(255, 255, 255));
+            btn->setOpacity(255);
+            btn->setCascadeColorEnabled(true);
+            btn->setCascadeOpacityEnabled(true);
+        }
+
         auto layer = MapImageLayer::create();
 
         if (layer)
