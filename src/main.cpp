@@ -72,7 +72,7 @@ public:
 
     void registerWithTouchDispatcher() override {
         CCDirector::sharedDirector()->getTouchDispatcher()
-            ->addTargetedDelegate(this, -500, true);
+            ->addTargetedDelegate(this, 0, true);
     }
 
     void onExit() override {
