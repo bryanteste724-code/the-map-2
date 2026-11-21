@@ -155,11 +155,12 @@ class $modify(MyCreatorLayer, CreatorLayer) {
                 if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(node)) {
                     btn->setEnabled(true);
 
-                    if (auto normalImage = btn->getNormalImage()) {
+                    if (auto normalImage = typeinfo_cast<CCRGBAProtocol*>(btn->getNormalImage())) {
                         normalImage->setColor(ccc3(255, 255, 255));
                         normalImage->setOpacity(255);
 
-                        for (auto* child : CCArrayExt<CCNode*>(normalImage->getChildren())) {
+                        auto imageNode = btn->getNormalImage();
+                        for (auto* child : CCArrayExt<CCNode*>(imageNode->getChildren())) {
                             if (auto rgbaNode = typeinfo_cast<CCRGBAProtocol*>(child)) {
                                 rgbaNode->setColor(ccc3(255, 255, 255));
                                 rgbaNode->setOpacity(255);
