@@ -31,14 +31,14 @@ public:
 
         addChild(m_image);
 
-        // GOLD: tamanho reduzido e posição fixa
+        // GOLD: menor e um pouco mais para cima
         m_gold = CCSprite::create("gold - the map.png"_spr);
 
         if (m_gold) {
             m_gold->setScale(0.5f);
             m_gold->setPosition({
                 win.width / 2,
-                win.height - 35
+                win.height - 20
             });
             addChild(m_gold, 50);
         }
