@@ -6,6 +6,7 @@ using namespace geode::prelude;
 
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
+    CCMenuItemSpriteExtra* m_closeButton = nullptr;
 
 public:
     bool init() override {
@@ -32,16 +33,16 @@ public:
         if (!closeSprite)
             return false;
 
-        auto closeButton = CCMenuItemSpriteExtra::create(
+        m_closeButton = CCMenuItemSpriteExtra::create(
             closeSprite,
             this,
             menu_selector(MapImageLayer::onClose)
         );
 
-        auto menu = CCMenu::create(closeButton, nullptr);
+        auto menu = CCMenu::create(m_closeButton, nullptr);
         menu->setPosition(CCPointZero);
 
-        closeButton->setPosition({
+        m_closeButton->setPosition({
             win.width - 25,
             win.height - 25
         });
@@ -72,7 +73,7 @@ public:
 
     void registerWithTouchDispatcher() override {
         CCDirector::sharedDirector()->getTouchDispatcher()
-            ->addTargetedDelegate(this, 0, true);
+            ->addTargetedDelegate(this, -500, true);
     }
 
     void onExit() override {
@@ -84,6 +85,10 @@ public:
 
     bool ccTouchBegan(CCTouch* touch, CCEvent*) override {
         auto pos = convertToNodeSpace(touch->getLocation());
+
+        if (m_closeButton &&
+            m_closeButton->boundingBox().containsPoint(pos))
+            return false;
 
         m_dragging = m_image->boundingBox().containsPoint(pos);
 
@@ -145,6 +150,6 @@ class $modify(MyCreatorLayer, CreatorLayer) {
         auto layer = MapImageLayer::create();
 
         if (layer)
-            addChild(layer, 1000);
+            addChild(layer, 10000);
     }
 };
