@@ -6,6 +6,7 @@ using namespace geode::prelude;
 
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
+    CCSprite* m_gold = nullptr;
     CCMenuItemSpriteExtra* m_closeButton = nullptr;
     CCPoint m_last;
     bool m_dragging = false;
@@ -27,7 +28,19 @@ public:
         constexpr float zoom = 2.45f;
         m_image->setScaleX((win.width / size.width) * zoom);
         m_image->setScaleY((win.height / size.height) * zoom);
+
         addChild(m_image);
+
+        // GOLD: fica fixo no centro superior
+        m_gold = CCSprite::create("gold - the map.png"_spr);
+
+        if (m_gold) {
+            m_gold->setPosition({
+                win.width / 2,
+                win.height - 35
+            });
+            addChild(m_gold, 50);
+        }
 
         auto closeSprite = CCSprite::create("GJ_closeBtn_001.png"_spr);
         if (!closeSprite)
@@ -41,10 +54,12 @@ public:
 
         auto menu = CCMenu::create(m_closeButton, nullptr);
         menu->setPosition(CCPointZero);
+
         m_closeButton->setPosition({
             win.width - 25,
             win.height - 25
         });
+
         addChild(menu, 100);
 
         setTouchEnabled(true);
