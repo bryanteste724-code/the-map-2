@@ -85,14 +85,27 @@ public:
     bool ccTouchBegan(CCTouch* touch, CCEvent*) override {
         auto pos = convertToNodeSpace(touch->getLocation());
 
-        if (!m_image->boundingBox().containsPoint(pos))
-            return false;
+        m_dragging = m_image->boundingBox().containsPoint(pos);
 
-        m_last = pos;
+        if (m_dragging)
+            m_last = pos;
+
+        // Captura o toque para impedir que chegue à CreatorLayer
         return true;
     }
 
+    void ccTouchEnded(CCTouch*, CCEvent*) override {
+        m_dragging = false;
+    }
+
+    void ccTouchCancelled(CCTouch*, CCEvent*) override {
+        m_dragging = false;
+    }
+
     void ccTouchMoved(CCTouch* touch, CCEvent*) override {
+        if (!m_dragging)
+            return;
+
         auto pos = convertToNodeSpace(touch->getLocation());
 
         auto delta = pos - m_last;
@@ -124,6 +137,7 @@ public:
 
 private:
     CCPoint m_last;
+    bool m_dragging = false;
 };
 
 class $modify(MyCreatorLayer, CreatorLayer) {
