@@ -7,7 +7,8 @@ using namespace geode::prelude;
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
     CCMenuItemSpriteExtra* m_closeButton = nullptr;
-    bool m_mapMusicPlaying = false;
+    CCPoint m_last;
+    bool m_dragging = false;
 
 public:
     bool init() override {
@@ -20,17 +21,14 @@ public:
         if (!m_image)
             return false;
 
-
         auto size = m_image->getContentSize();
         m_image->setPosition(win / 2);
 
-        constexpr float zoom = 1.50f;
+        constexpr float zoom = 1.83f;
         m_image->setScaleX((win.width / size.width) * zoom);
         m_image->setScaleY((win.height / size.height) * zoom);
-
         addChild(m_image);
 
-        // Botão X
         auto closeSprite = CCSprite::create("GJ_closeBtn_001.png"_spr);
         if (!closeSprite)
             return false;
@@ -43,12 +41,10 @@ public:
 
         auto menu = CCMenu::create(m_closeButton, nullptr);
         menu->setPosition(CCPointZero);
-
         m_closeButton->setPosition({
             win.width - 25,
             win.height - 25
         });
-
         addChild(menu, 100);
 
         setTouchEnabled(true);
@@ -76,46 +72,6 @@ public:
     void registerWithTouchDispatcher() override {
         CCDirector::sharedDirector()->getTouchDispatcher()
             ->addTargetedDelegate(this, -500, true);
-    }
-
-    void onEnter() override {
-        CCLayerColor::onEnter();
-
-        auto audio = FMODAudioEngine::sharedEngine();
-
-        // Pausa as músicas anteriores
-        audio->pauseAllMusic(true);
-
-        if (audio->m_backgroundMusicChannel)
-            audio->m_backgroundMusicChannel->setPaused(true);
-
-        // Toca a música do mapa em loop
-        auto musicPath = Mod::get()->getResourcesDir() / "map_01.mp3";
-        audio->playMusic(musicPath.string(), true, 0.0f, 9999);
-
-        m_mapMusicPlaying = true;
-    }
-
-    void onExit() override {
-        if (m_mapMusicPlaying) {
-            auto audio = FMODAudioEngine::sharedEngine();
-
-            // Para a música do mapa
-            audio->stopMusic(9999);
-
-            // Retoma as músicas anteriores
-            audio->resumeAllMusic();
-
-            if (audio->m_backgroundMusicChannel)
-                audio->m_backgroundMusicChannel->setPaused(false);
-
-            m_mapMusicPlaying = false;
-        }
-
-        CCDirector::sharedDirector()->getTouchDispatcher()
-            ->removeDelegate(this);
-
-        CCLayerColor::onExit();
     }
 
     bool ccTouchBegan(CCTouch* touch, CCEvent*) override {
@@ -146,7 +102,6 @@ public:
             return;
 
         auto pos = convertToNodeSpace(touch->getLocation());
-
         auto delta = pos - m_last;
         auto newPos = m_image->getPosition() + delta;
 
@@ -159,7 +114,6 @@ public:
 
         float minX = win.width - width * (1.0f - anchor.x);
         float maxX = width * anchor.x;
-
         float minY = win.height - height * (1.0f - anchor.y);
         float maxY = height * anchor.y;
 
@@ -174,28 +128,16 @@ public:
         removeFromParentAndCleanup(true);
     }
 
-private:
-    CCPoint m_last;
-    bool m_dragging = false;
+    void onExit() override {
+        CCDirector::sharedDirector()->getTouchDispatcher()
+            ->removeDelegate(this);
+
+        CCLayerColor::onExit();
+    }
 };
 
-class $modify(MyCreatorLayer, CreatorLayer) {
-    bool init() {
-        if (!CreatorLayer::init())
-            return false;
-
-        return true;
-    }
-
+class $modify(CreatorLayer) {
     void onAdventureMap(CCObject* sender) {
-        if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(sender)) {
-            btn->setEnabled(true);
-            btn->setColor(ccc3(255, 255, 255));
-            btn->setOpacity(255);
-            btn->setCascadeColorEnabled(true);
-            btn->setCascadeOpacityEnabled(true);
-        }
-
         auto layer = MapImageLayer::create();
 
         if (layer)
