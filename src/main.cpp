@@ -149,27 +149,40 @@ class $modify(MyCreatorLayer, CreatorLayer) {
         if (!CreatorLayer::init())
             return false;
 
-        // Remove grayscale dos botões da CreatorLayer
-        if (auto menu = this->getChildByID("creator-buttons-menu")) {
-            for (auto* node : CCArrayExt<CCNode*>(menu->getChildren())) {
-                if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(node)) {
-                    btn->setEnabled(true);
+        // Diagnostico dos nos da CreatorLayer
+        std::function<void(CCNode*, int)> inspect = [&](CCNode* node, int depth) {
+            if (!node) return;
 
-                    if (auto normalImage = typeinfo_cast<CCRGBAProtocol*>(btn->getNormalImage())) {
-                        normalImage->setColor(ccc3(255, 255, 255));
-                        normalImage->setOpacity(255);
+            auto indent = std::string(depth * 2, ' ');
+            log::info("{}Node: {} | ID: {} | Tag: {}",
+                indent,
+                typeid(*node).name(),
+                node->getID(),
+                node->getTag()
+            );
 
-                        auto imageNode = btn->getNormalImage();
-                        for (auto* child : CCArrayExt<CCNode*>(imageNode->getChildren())) {
-                            if (auto rgbaNode = typeinfo_cast<CCRGBAProtocol*>(child)) {
-                                rgbaNode->setColor(ccc3(255, 255, 255));
-                                rgbaNode->setOpacity(255);
-                            }
-                        }
+            if (auto sprite = typeinfo_cast<CCSprite*>(node)) {
+                auto color = sprite->getColor();
+                log::info("{}Sprite color: {},{},{} opacity: {}",
+                    indent, color.r, color.g, color.b, sprite->getOpacity());
+            }
+
+            if (auto menu = typeinfo_cast<CCMenu*>(node)) {
+                for (auto* child : CCArrayExt<CCNode*>(menu->getChildren())) {
+                    if (auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(child)) {
+                        log::info("{}BUTTON enabled: {}", indent, btn->isEnabled());
                     }
                 }
             }
-        }
+
+            for (auto* child : CCArrayExt<CCNode*>(node->getChildren())) {
+                inspect(child, depth + 1);
+            }
+        };
+
+        log::info("=== THE MAP: CREATORLAYER DIAGNOSTIC ===");
+        inspect(this, 0);
+        log::info("=== END DIAGNOSTIC ===");
 
         return true;
     }
