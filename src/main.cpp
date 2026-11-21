@@ -7,6 +7,7 @@ using namespace geode::prelude;
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
     CCMenuItemSpriteExtra* m_closeButton = nullptr;
+    bool m_mapMusicPlaying = false;
 
 public:
     bool init() override {
@@ -19,14 +20,6 @@ public:
         if (!m_image)
             return false;
 
-        // Toca a música ao abrir o mapa
-        auto musicPath = Mod::get()->getResourcesDir() / "map_01.mp3";
-        FMODAudioEngine::sharedEngine()->playMusic(
-            musicPath.string(),
-            true,
-            1.0f,
-            0
-        );
 
         auto size = m_image->getContentSize();
         m_image->setPosition(win / 2);
@@ -85,7 +78,40 @@ public:
             ->addTargetedDelegate(this, -500, true);
     }
 
+    void onEnter() override {
+        CCLayerColor::onEnter();
+
+        auto audio = FMODAudioEngine::sharedEngine();
+
+        // Pausa as músicas anteriores
+        audio->pauseAllMusic(true);
+
+        if (audio->m_backgroundMusicChannel)
+            audio->m_backgroundMusicChannel->setPaused(true);
+
+        // Toca a música do mapa em loop
+        auto musicPath = Mod::get()->getResourcesDir() / "map_01.mp3";
+        audio->playMusic(musicPath.string(), true, 0.0f, 9999);
+
+        m_mapMusicPlaying = true;
+    }
+
     void onExit() override {
+        if (m_mapMusicPlaying) {
+            auto audio = FMODAudioEngine::sharedEngine();
+
+            // Para a música do mapa
+            audio->stopMusic(9999);
+
+            // Retoma as músicas anteriores
+            audio->resumeAllMusic();
+
+            if (audio->m_backgroundMusicChannel)
+                audio->m_backgroundMusicChannel->setPaused(false);
+
+            m_mapMusicPlaying = false;
+        }
+
         CCDirector::sharedDirector()->getTouchDispatcher()
             ->removeDelegate(this);
 
