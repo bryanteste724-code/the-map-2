@@ -8,11 +8,16 @@ class MapImageLayer;
 
 class BlackTransitionLayer : public CCLayerColor {
     CCNode* m_parent = nullptr;
+    MapImageLayer* m_closeMap = nullptr;
     bool m_openMap = false;
 
 public:
-    bool init(CCNode* parent, bool openMap);
-    static BlackTransitionLayer* create(CCNode* parent, bool openMap);
+    bool init(CCNode* parent, bool openMap, MapImageLayer* closeMap);
+    static BlackTransitionLayer* create(
+        CCNode* parent,
+        bool openMap,
+        MapImageLayer* closeMap = nullptr
+    );
     void start();
     void onBlack();
     void onFinish();
@@ -100,15 +105,13 @@ public:
 
         if (parent) {
             auto transition =
-                BlackTransitionLayer::create(parent, false);
+                BlackTransitionLayer::create(parent, false, this);
 
             if (transition) {
                 parent->addChild(transition, 20000);
                 transition->start();
             }
         }
-
-        removeFromParentAndCleanup(true);
     }
 
     void registerWithTouchDispatcher() override {
@@ -178,12 +181,18 @@ public:
     }
 };
 
-bool BlackTransitionLayer::init(CCNode* parent, bool openMap) {
+bool BlackTransitionLayer::init(
+    CCNode* parent,
+    bool openMap,
+    MapImageLayer* closeMap
+) {
     if (!CCLayerColor::initWithColor({0, 0, 0, 255}))
         return false;
 
     m_parent = parent;
     m_openMap = openMap;
+    m_closeMap = closeMap;
+
     setOpacity(0);
 
     return true;
@@ -191,11 +200,12 @@ bool BlackTransitionLayer::init(CCNode* parent, bool openMap) {
 
 BlackTransitionLayer* BlackTransitionLayer::create(
     CCNode* parent,
-    bool openMap
+    bool openMap,
+    MapImageLayer* closeMap
 ) {
     auto ret = new BlackTransitionLayer();
 
-    if (ret && ret->init(parent, openMap)) {
+    if (ret && ret->init(parent, openMap, closeMap)) {
         ret->autorelease();
         return ret;
     }
@@ -226,6 +236,11 @@ void BlackTransitionLayer::onBlack() {
 
         if (map)
             m_parent->addChild(map, 10000);
+    }
+
+    if (!m_openMap && m_closeMap) {
+        m_closeMap->removeFromParentAndCleanup(true);
+        m_closeMap = nullptr;
     }
 }
 
