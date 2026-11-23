@@ -11,60 +11,11 @@ class BlackTransitionLayer : public CCLayerColor {
     bool m_openMap = false;
 
 public:
-    bool init(CCNode* parent, bool openMap) {
-        if (!CCLayerColor::initWithColor({0, 0, 0, 255}))
-            return false;
-
-        m_parent = parent;
-        m_openMap = openMap;
-        setOpacity(0);
-
-        return true;
-    }
-
-    static BlackTransitionLayer* create(
-        CCNode* parent,
-        bool openMap
-    ) {
-        auto ret = new BlackTransitionLayer();
-
-        if (ret && ret->init(parent, openMap)) {
-            ret->autorelease();
-            return ret;
-        }
-
-        CC_SAFE_DELETE(ret);
-        return nullptr;
-    }
-
-    void start() {
-        runAction(CCSequence::create(
-            CCFadeTo::create(0.15f, 255),
-            CCCallFunc::create(
-                this,
-                callfunc_selector(BlackTransitionLayer::onBlack)
-            ),
-            CCFadeTo::create(0.15f, 0),
-            CCCallFunc::create(
-                this,
-                callfunc_selector(BlackTransitionLayer::onFinish)
-            ),
-            nullptr
-        ));
-    }
-
-    void onBlack() {
-        if (m_openMap && m_parent) {
-            auto map = MapImageLayer::create();
-
-            if (map)
-                m_parent->addChild(map, 10000);
-        }
-    }
-
-    void onFinish() {
-        removeFromParentAndCleanup(true);
-    }
+    bool init(CCNode* parent, bool openMap);
+    static BlackTransitionLayer* create(CCNode* parent, bool openMap);
+    void start();
+    void onBlack();
+    void onFinish();
 };
 
 class MapImageLayer : public CCLayerColor {
@@ -226,6 +177,61 @@ public:
         CCLayerColor::onExit();
     }
 };
+
+bool BlackTransitionLayer::init(CCNode* parent, bool openMap) {
+    if (!CCLayerColor::initWithColor({0, 0, 0, 255}))
+        return false;
+
+    m_parent = parent;
+    m_openMap = openMap;
+    setOpacity(0);
+
+    return true;
+}
+
+BlackTransitionLayer* BlackTransitionLayer::create(
+    CCNode* parent,
+    bool openMap
+) {
+    auto ret = new BlackTransitionLayer();
+
+    if (ret && ret->init(parent, openMap)) {
+        ret->autorelease();
+        return ret;
+    }
+
+    CC_SAFE_DELETE(ret);
+    return nullptr;
+}
+
+void BlackTransitionLayer::start() {
+    runAction(CCSequence::create(
+        CCFadeTo::create(0.15f, 255),
+        CCCallFunc::create(
+            this,
+            callfunc_selector(BlackTransitionLayer::onBlack)
+        ),
+        CCFadeTo::create(0.15f, 0),
+        CCCallFunc::create(
+            this,
+            callfunc_selector(BlackTransitionLayer::onFinish)
+        ),
+        nullptr
+    ));
+}
+
+void BlackTransitionLayer::onBlack() {
+    if (m_openMap && m_parent) {
+        auto map = MapImageLayer::create();
+
+        if (map)
+            m_parent->addChild(map, 10000);
+    }
+}
+
+void BlackTransitionLayer::onFinish() {
+    removeFromParentAndCleanup(true);
+}
 
 class $modify(TMCreatorLayer, CreatorLayer) {
     bool init() override {
