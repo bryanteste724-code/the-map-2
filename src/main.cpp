@@ -42,7 +42,7 @@ public:
             return false;
 
         auto size = m_image->getContentSize();
-        m_image->setPosition(win / 2);
+        m_image->setPosition({win.width * 1.225f, win.height * 0.615f});
 
         constexpr float zoom = 2.45f;
         m_image->setScaleX((win.width / size.width) * zoom);
