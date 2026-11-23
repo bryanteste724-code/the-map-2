@@ -4,6 +4,52 @@
 
 using namespace geode::prelude;
 
+class MapImageLayer;
+
+class BlackTransitionLayer : public CCLayerColor {
+    CCNode* m_parent = nullptr;
+    bool m_openMap = false;
+
+public:
+    bool init(CCNode* parent, bool openMap) {
+        if (!CCLayerColor::initWithColor({0, 0, 0, 255}))
+            return false;
+
+        m_parent = parent;
+        m_openMap = openMap;
+
+        return true;
+    }
+
+    static BlackTransitionLayer* create(
+        CCNode* parent,
+        bool openMap
+    ) {
+        auto ret = new BlackTransitionLayer();
+
+        if (ret && ret->init(parent, openMap)) {
+            ret->autorelease();
+            return ret;
+        }
+
+        CC_SAFE_DELETE(ret);
+        return nullptr;
+    }
+
+    void start() {
+        runAction(CCSequence::create(
+            CCDelayTime::create(0.15f),
+            CCCallFunc::create(
+                this,
+                callfunc_selector(BlackTransitionLayer::onFinish)
+            ),
+            nullptr
+        ));
+    }
+
+    void onFinish();
+};
+
 class MapImageLayer : public CCLayerColor {
     CCSprite* m_image = nullptr;
     CCSprite* m_gold = nullptr;
@@ -31,6 +77,7 @@ public:
         addChild(m_image);
 
         m_gold = CCSprite::create("gold - the map.png"_spr);
+
         if (m_gold) {
             m_gold->setScale(0.5f);
             m_gold->setPosition({
@@ -64,6 +111,7 @@ public:
 
         setTouchEnabled(true);
         setKeypadEnabled(true);
+
         return true;
     }
 
@@ -80,6 +128,18 @@ public:
     }
 
     void onClose(CCObject*) {
+        auto parent = getParent();
+
+        if (parent) {
+            auto transition =
+                BlackTransitionLayer::create(parent, false);
+
+            if (transition) {
+                parent->addChild(transition, 20000);
+                transition->start();
+            }
+        }
+
         removeFromParentAndCleanup(true);
     }
 
@@ -139,7 +199,7 @@ public:
     }
 
     void keyBackClicked() override {
-        removeFromParentAndCleanup(true);
+        onClose(nullptr);
     }
 
     void onExit() override {
@@ -149,6 +209,17 @@ public:
         CCLayerColor::onExit();
     }
 };
+
+void BlackTransitionLayer::onFinish() {
+    if (m_openMap && m_parent) {
+        auto map = MapImageLayer::create();
+
+        if (map)
+            m_parent->addChild(map, 10000);
+    }
+
+    removeFromParentAndCleanup(true);
+}
 
 class $modify(TMCreatorLayer, CreatorLayer) {
     bool init() override {
@@ -187,15 +258,19 @@ class $modify(TMCreatorLayer, CreatorLayer) {
 
         newButton->setID("the-map-button");
         newButton->setPosition(mapBtn->getPosition());
+
         menu->addChild(newButton);
 
         return true;
     }
 
     void onAdventureMap(CCObject*) {
-        auto layer = MapImageLayer::create();
+        auto transition =
+            BlackTransitionLayer::create(this, true);
 
-        if (layer)
-            addChild(layer, 10000);
+        if (transition) {
+            addChild(transition, 20000);
+            transition->start();
+        }
     }
 };
