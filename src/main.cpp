@@ -177,7 +177,7 @@ class $modify(TMCreatorLayer, CreatorLayer) {
         if (!sprite)
             return true;
 
-        sprite->setScale(0.75f);
+        sprite->setScale(0.80f);
 
         auto newButton = CCMenuItemSpriteExtra::create(
             sprite,
